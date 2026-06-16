@@ -1,0 +1,1090 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cartera Digital · MXN</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:        #0A0E1A;
+    --surface:   #111827;
+    --card:      #1A2035;
+    --card2:     #222d45;
+    --accent:    #00D4AA;
+    --accent2:   #00b894;
+    --blue:      #3B82F6;
+    --danger:    #FF4757;
+    --warn:      #FFA502;
+    --text:      #E8EDF5;
+    --muted:     #6B7A99;
+    --border:    #2A3550;
+    --radius:    14px;
+    --radius-sm: 8px;
+    --shadow:    0 4px 24px rgba(0,0,0,.45);
+  }
+
+  html, body {
+    height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    font-size: 15px;
+    line-height: 1.5;
+    overflow-x: hidden;
+  }
+
+  /* ── SCROLLBAR ── */
+  ::-webkit-scrollbar { width: 5px; }
+  ::-webkit-scrollbar-track { background: var(--surface); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+
+  /* ══════════════════════════════════
+     LAYOUT
+  ══════════════════════════════════ */
+  .app {
+    min-height: 100vh;
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 0 0 80px;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    padding: 20px 20px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .header-brand {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+  }
+  .brand-icon {
+    width: 34px; height: 34px;
+    background: linear-gradient(135deg, var(--accent), var(--blue));
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 17px;
+  }
+  .brand-text { font-weight: 700; font-size: 15px; letter-spacing: -.3px; }
+  .brand-sub  { font-size: 10px; color: var(--muted); letter-spacing: .5px; text-transform: uppercase; }
+
+  /* ── BALANCE CARD ── */
+  .balance-card {
+    margin: 18px 16px 0;
+    background: linear-gradient(145deg, #162040 0%, #0f1a30 60%, #0A0E1A 100%);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 26px 24px 22px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+  }
+  .balance-card::before {
+    content: '';
+    position: absolute;
+    top: -60px; right: -60px;
+    width: 180px; height: 180px;
+    background: radial-gradient(circle, rgba(0,212,170,.15) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .balance-label {
+    font-size: 11px;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+  .balance-amount {
+    font-family: 'Courier New', 'Courier', monospace;
+    font-size: clamp(28px, 7vw, 38px);
+    font-weight: 700;
+    letter-spacing: -1px;
+    line-height: 1;
+    color: var(--text);
+    transition: color .3s;
+    word-break: break-all;
+  }
+  .balance-amount.negative { color: var(--danger); }
+  .balance-amount.flash-up   { animation: flashUp .5s ease; }
+  .balance-amount.flash-down { animation: flashDown .5s ease; }
+  .balance-currency {
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 4px;
+    letter-spacing: .5px;
+  }
+  .credit-badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    background: rgba(255,71,87,.15);
+    border: 1px solid rgba(255,71,87,.3);
+    color: var(--danger);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: .8px;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border-radius: 99px;
+    margin-top: 8px;
+  }
+  .credit-badge.hidden { display: none; }
+
+  @keyframes flashUp   { 0%,100%{color:var(--text)} 30%{color:var(--accent)} }
+  @keyframes flashDown { 0%,100%{color:var(--text)} 30%{color:var(--danger)} }
+
+  /* ── QUICK ACTIONS ── */
+  .actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin: 14px 16px 0;
+  }
+  .btn-action {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px 12px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 7px;
+    transition: background .2s, transform .15s, border-color .2s;
+    color: var(--text);
+    font-size: 13px;
+    font-weight: 600;
+    text-align: center;
+    line-height: 1.3;
+  }
+  .btn-action:hover { background: var(--card2); transform: translateY(-2px); }
+  .btn-action:active { transform: translateY(0); }
+  .btn-action .ico { font-size: 22px; }
+  .btn-action.income { border-color: rgba(0,212,170,.35); }
+  .btn-action.income:hover { border-color: var(--accent); }
+  .btn-action.expense { border-color: rgba(255,71,87,.25); }
+  .btn-action.expense:hover { border-color: var(--danger); }
+
+  /* ── HISTORY ── */
+  .history-section {
+    margin: 18px 16px 0;
+  }
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+  .section-title {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .clear-link {
+    font-size: 11px;
+    color: var(--muted);
+    cursor: pointer;
+    text-decoration: none;
+    background: none;
+    border: none;
+    padding: 0;
+    transition: color .2s;
+  }
+  .clear-link:hover { color: var(--danger); }
+
+  .tx-list { display: flex; flex-direction: column; gap: 8px; }
+
+  .tx-item {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    animation: slideIn .3s ease;
+  }
+  @keyframes slideIn {
+    from { opacity:0; transform: translateY(-8px); }
+    to   { opacity:1; transform: translateY(0); }
+  }
+  .tx-icon {
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+  .tx-icon.in  { background: rgba(0,212,170,.12); }
+  .tx-icon.out { background: rgba(255,71,87,.12); }
+  .tx-body { flex: 1; min-width: 0; }
+  .tx-concept {
+    font-size: 13px; font-weight: 600;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .tx-meta {
+    font-size: 10px; color: var(--muted);
+    margin-top: 2px;
+    display: flex; gap: 6px; flex-wrap: wrap;
+  }
+  .tx-folio { font-family: monospace; letter-spacing: .5px; }
+  .tx-amount {
+    font-family: monospace;
+    font-size: 14px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .tx-amount.in  { color: var(--accent); }
+  .tx-amount.out { color: var(--danger); }
+
+  .empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--muted);
+    font-size: 13px;
+  }
+  .empty-state .emo { font-size: 32px; margin-bottom: 8px; }
+
+  /* ══════════════════════════════════
+     MODAL
+  ══════════════════════════════════ */
+  .overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,.7);
+    backdrop-filter: blur(4px);
+    z-index: 100;
+    display: flex; align-items: flex-end; justify-content: center;
+    opacity: 0; pointer-events: none;
+    transition: opacity .25s;
+  }
+  .overlay.active { opacity: 1; pointer-events: all; }
+
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 24px 24px 0 0;
+    width: 100%; max-width: 480px;
+    padding: 28px 24px 36px;
+    transform: translateY(40px);
+    transition: transform .3s cubic-bezier(.34,1.56,.64,1);
+    max-height: 92vh;
+    overflow-y: auto;
+  }
+  .overlay.active .modal {
+    transform: translateY(0);
+  }
+
+  .modal-drag {
+    width: 40px; height: 4px;
+    background: var(--border);
+    border-radius: 99px;
+    margin: 0 auto 20px;
+  }
+  .modal-title {
+    font-size: 18px; font-weight: 700;
+    margin-bottom: 22px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .modal-title .badge {
+    padding: 3px 10px;
+    border-radius: 99px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .5px;
+  }
+  .badge-in  { background: rgba(0,212,170,.15); color: var(--accent); }
+  .badge-out { background: rgba(255,71,87,.15); color: var(--danger); }
+
+  /* FORM */
+  .form-group { margin-bottom: 16px; }
+  .form-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .8px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 7px;
+    display: block;
+  }
+  .form-input, .form-select, .form-textarea {
+    width: 100%;
+    background: var(--card);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-size: 15px;
+    padding: 12px 14px;
+    outline: none;
+    transition: border-color .2s;
+    font-family: inherit;
+  }
+  .form-input:focus, .form-select:focus, .form-textarea:focus {
+    border-color: var(--accent);
+  }
+  .form-input.money {
+    font-family: 'Courier New', monospace;
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+  }
+  .form-input.money::placeholder { color: var(--border); }
+  .form-select option { background: var(--card); }
+  .form-textarea { resize: vertical; min-height: 64px; font-size: 13px; }
+
+  .error-msg {
+    background: rgba(255,71,87,.1);
+    border: 1px solid rgba(255,71,87,.3);
+    border-radius: var(--radius-sm);
+    color: var(--danger);
+    font-size: 13px;
+    padding: 10px 14px;
+    margin-bottom: 14px;
+    display: none;
+    align-items: center;
+    gap: 8px;
+  }
+  .error-msg.show { display: flex; }
+
+  .btn-confirm {
+    width: 100%;
+    padding: 15px;
+    border-radius: var(--radius);
+    border: none;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity .2s, transform .15s;
+    letter-spacing: .3px;
+  }
+  .btn-confirm:hover   { opacity: .9; }
+  .btn-confirm:active  { transform: scale(.98); }
+  .btn-confirm.income  { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #0A0E1A; }
+  .btn-confirm.expense { background: linear-gradient(135deg, #FF4757, #c0392b); color: #fff; }
+
+  .btn-cancel {
+    width: 100%;
+    padding: 12px;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    font-size: 14px;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: background .2s, color .2s;
+  }
+  .btn-cancel:hover { background: var(--card); color: var(--text); }
+
+  /* ══════════════════════════════════
+     ADMIN PANEL
+  ══════════════════════════════════ */
+  .admin-btn {
+    position: fixed;
+    bottom: 18px; right: 18px;
+    width: 42px; height: 42px;
+    border-radius: 12px;
+    background: var(--card2);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 18px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: background .2s, color .2s, border-color .2s;
+    z-index: 50;
+    box-shadow: var(--shadow);
+  }
+  .admin-btn:hover { background: var(--card); color: var(--text); border-color: var(--accent); }
+  .admin-btn.unlocked { border-color: var(--warn); color: var(--warn); }
+
+  .admin-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px 20px 0 0;
+    width: 100%; max-width: 480px;
+    padding: 28px 24px 40px;
+    transform: translateY(40px);
+    transition: transform .3s cubic-bezier(.34,1.56,.64,1);
+    max-height: 90vh; overflow-y: auto;
+  }
+  .overlay.active .admin-panel { transform: translateY(0); }
+
+  .admin-title {
+    font-size: 16px; font-weight: 700;
+    color: var(--warn);
+    margin-bottom: 20px;
+    display: flex; align-items: center; gap: 8px;
+  }
+
+  .admin-section {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 16px;
+    margin-bottom: 12px;
+  }
+  .admin-section-title {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: .8px;
+    color: var(--muted);
+    font-weight: 600;
+    margin-bottom: 12px;
+  }
+
+  .toggle-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+  }
+  .toggle-label { font-size: 13px; font-weight: 500; line-height: 1.4; }
+  .toggle-sub   { font-size: 11px; color: var(--muted); }
+
+  .toggle {
+    position: relative;
+    width: 48px; height: 26px;
+    flex-shrink: 0;
+  }
+  .toggle input { opacity: 0; width: 0; height: 0; }
+  .toggle-slider {
+    position: absolute; inset: 0;
+    background: var(--border);
+    border-radius: 99px;
+    cursor: pointer;
+    transition: background .3s;
+  }
+  .toggle-slider::after {
+    content: '';
+    position: absolute;
+    left: 3px; top: 3px;
+    width: 20px; height: 20px;
+    background: #fff;
+    border-radius: 50%;
+    transition: transform .3s;
+  }
+  .toggle input:checked + .toggle-slider { background: var(--danger); }
+  .toggle input:checked + .toggle-slider::after { transform: translateX(22px); }
+
+  .btn-admin-set {
+    width: 100%;
+    padding: 12px;
+    border-radius: var(--radius-sm);
+    border: none;
+    background: var(--accent);
+    color: #0A0E1A;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: opacity .2s;
+  }
+  .btn-admin-set:hover { opacity: .85; }
+
+  .btn-danger {
+    width: 100%;
+    padding: 12px;
+    border-radius: var(--radius-sm);
+    border: 1.5px solid var(--danger);
+    background: transparent;
+    color: var(--danger);
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background .2s;
+  }
+  .btn-danger:hover { background: rgba(255,71,87,.1); }
+
+  /* ── PASSWORD SCREEN ── */
+  .pw-screen {
+    text-align: center;
+    padding: 10px 0 6px;
+  }
+  .pw-icon { font-size: 36px; margin-bottom: 12px; }
+  .pw-screen h3 { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
+  .pw-screen p { font-size: 13px; color: var(--muted); margin-bottom: 20px; }
+  .pw-input {
+    width: 100%;
+    background: var(--card);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-size: 18px;
+    padding: 12px 14px;
+    text-align: center;
+    letter-spacing: 4px;
+    outline: none;
+    font-family: monospace;
+    margin-bottom: 4px;
+  }
+  .pw-input:focus { border-color: var(--warn); }
+  .pw-error {
+    font-size: 12px;
+    color: var(--danger);
+    margin-bottom: 14px;
+    min-height: 18px;
+  }
+  .btn-pw-confirm {
+    width: 100%;
+    padding: 13px;
+    border-radius: var(--radius-sm);
+    border: none;
+    background: var(--warn);
+    color: #0A0E1A;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity .2s;
+  }
+  .btn-pw-confirm:hover { opacity: .85; }
+
+  /* ── TOAST ── */
+  .toast {
+    position: fixed;
+    top: 20px; left: 50%; transform: translateX(-50%) translateY(-80px);
+    background: var(--card2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 18px;
+    font-size: 13px;
+    font-weight: 600;
+    z-index: 999;
+    transition: transform .4s cubic-bezier(.34,1.56,.64,1);
+    white-space: nowrap;
+    box-shadow: var(--shadow);
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+  .toast.success { border-color: var(--accent); color: var(--accent); }
+  .toast.error   { border-color: var(--danger); color: var(--danger); }
+  .toast.info    { border-color: var(--blue);   color: var(--blue); }
+
+  /* CONFIRM DIALOG */
+  .confirm-box {
+    text-align: center; padding: 8px 0;
+  }
+  .confirm-box .ico { font-size: 40px; margin-bottom: 12px; }
+  .confirm-box h3 { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
+  .confirm-box p { font-size: 13px; color: var(--muted); margin-bottom: 22px; line-height: 1.5; }
+  .confirm-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .btn-no { padding: 12px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: transparent; color: var(--muted); font-size: 14px; cursor: pointer; transition: background .2s; }
+  .btn-no:hover { background: var(--card); color: var(--text); }
+  .btn-yes { padding: 12px; border-radius: var(--radius-sm); border: none; background: var(--danger); color: #fff; font-size: 14px; font-weight: 700; cursor: pointer; transition: opacity .2s; }
+  .btn-yes:hover { opacity: .85; }
+
+  /* ── RESPONSIVE ── */
+  @media (min-width: 481px) {
+    body { padding: 20px 0; }
+    .overlay { align-items: center; }
+    .modal, .admin-panel { border-radius: 24px; margin: 0 auto; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ════════════ APP ════════════ -->
+<div class="app">
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="header-brand">
+      <div class="brand-icon">💳</div>
+      <div>
+        <div class="brand-text">Cartera Digital</div>
+        <div class="brand-sub">Simulación Educativa · MXN</div>
+      </div>
+    </div>
+  </header>
+
+  <!-- BALANCE CARD -->
+  <div class="balance-card">
+    <div class="balance-label">Saldo Disponible</div>
+    <div class="balance-amount" id="balanceDisplay">$ 0.00</div>
+    <div class="balance-currency">PESOS MEXICANOS</div>
+    <div class="credit-badge hidden" id="creditBadge">⚠ Línea de Crédito Activa</div>
+  </div>
+
+  <!-- ACTIONS -->
+  <div class="actions">
+    <button class="btn-action income" onclick="openModal('income')">
+      <span class="ico">📥</span>
+      <span>Recibir /<br>Ingresar Dinero</span>
+    </button>
+    <button class="btn-action expense" onclick="openModal('expense')">
+      <span class="ico">💸</span>
+      <span>Pagar /<br>Retirar Dinero</span>
+    </button>
+  </div>
+
+  <!-- HISTORY -->
+  <div class="history-section">
+    <div class="section-header">
+      <span class="section-title">Últimas Transacciones</span>
+      <button class="clear-link" onclick="promptClear()" id="clearBtn" style="display:none">Limpiar todo</button>
+    </div>
+    <div class="tx-list" id="txList">
+      <div class="empty-state">
+        <div class="emo">💼</div>
+        <div>Sin transacciones aún.<br>¡Realiza tu primer movimiento!</div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /app -->
+
+<!-- ════════════ BOTÓN ADMIN ════════════ -->
+<button class="admin-btn" id="adminBtn" onclick="openAdmin()" title="Panel del Profesor">⚙</button>
+
+<!-- ════════════ TOAST ════════════ -->
+<div class="toast" id="toast"></div>
+
+<!-- ════════════ OVERLAYS ════════════ -->
+
+<!-- MODAL TRANSACCIÓN -->
+<div class="overlay" id="txOverlay" onclick="handleOverlayClick(event,'txOverlay')">
+  <div class="modal">
+    <div class="modal-drag"></div>
+    <div class="modal-title" id="modalTitle">Registrar Movimiento</div>
+
+    <div class="error-msg" id="errorMsg">
+      <span>🚫</span><span id="errorText">Fondos insuficientes.</span>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Monto ($)</label>
+      <input type="number" class="form-input money" id="amountInput"
+             placeholder="0.00" min="0.01" step="0.01" inputmode="decimal">
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Concepto</label>
+      <select class="form-select" id="conceptSelect">
+        <option value="">— Selecciona un concepto —</option>
+        <option>Inversión</option>
+        <option>Cobro de Renta</option>
+        <option>Préstamo Bancario</option>
+        <option>Pago de Impuestos</option>
+        <option>Compra de Propiedad</option>
+        <option>Venta de Propiedad</option>
+        <option>Salario / Ingreso</option>
+        <option>Pago de Servicio</option>
+        <option>Multa / Penalización</option>
+        <option>Ajuste del Profesor</option>
+        <option>Otro</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Detalle (Opcional)</label>
+      <textarea class="form-textarea" id="detailInput" placeholder="Notas adicionales sobre esta transacción…"></textarea>
+    </div>
+
+    <button class="btn-confirm" id="confirmBtn" onclick="confirmTransaction()">Confirmar</button>
+    <button class="btn-cancel" onclick="closeOverlay('txOverlay')">Cancelar</button>
+  </div>
+</div>
+
+<!-- MODAL ADMIN / PASSWORD -->
+<div class="overlay" id="adminOverlay" onclick="handleOverlayClick(event,'adminOverlay')">
+  <div class="admin-panel" id="adminPanel">
+    <div class="modal-drag"></div>
+
+    <!-- PASSWORD SCREEN -->
+    <div id="pwScreen" class="pw-screen">
+      <div class="pw-icon">🔐</div>
+      <h3>Acceso Restringido</h3>
+      <p>Ingresa la contraseña del profesor para acceder al panel de administración.</p>
+      <input type="password" class="pw-input" id="pwInput"
+             placeholder="••••••••" maxlength="20"
+             onkeydown="if(event.key==='Enter') checkPassword()">
+      <div class="pw-error" id="pwError"></div>
+      <button class="btn-pw-confirm" onclick="checkPassword()">🔓 Desbloquear</button>
+      <button class="btn-cancel" onclick="closeOverlay('adminOverlay')" style="margin-top:10px">Cancelar</button>
+    </div>
+
+    <!-- ADMIN CONTROLS -->
+    <div id="adminControls" style="display:none">
+      <div class="admin-title">⚙ Panel del Profesor</div>
+
+      <!-- SET BALANCE -->
+      <div class="admin-section">
+        <div class="admin-section-title">Modificar Saldo Directo</div>
+        <input type="number" class="form-input" id="adminBalance"
+               placeholder="Ej. 15000.00" step="0.01" inputmode="decimal">
+        <button class="btn-admin-set" onclick="adminSetBalance()">Establecer Saldo</button>
+      </div>
+
+      <!-- CREDIT TOGGLE -->
+      <div class="admin-section">
+        <div class="admin-section-title">Línea de Crédito / Deuda</div>
+        <div class="toggle-row">
+          <div>
+            <div class="toggle-label">Permitir Saldo Negativo</div>
+            <div class="toggle-sub">Simula tarjeta de crédito o deuda bancaria</div>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" id="creditToggle" onchange="toggleCredit()">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <!-- RESET -->
+      <div class="admin-section">
+        <div class="admin-section-title">Reinicio Completo</div>
+        <p style="font-size:12px;color:var(--muted);margin-bottom:10px;">
+          Borra el historial y regresa el saldo a <strong>$ 0.00 MXN</strong>. Esta acción no se puede deshacer.
+        </p>
+        <button class="btn-danger" onclick="promptReset()">🗑 Reiniciar Partida</button>
+      </div>
+
+      <button class="btn-cancel" onclick="closeOverlay('adminOverlay')">Cerrar Panel</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CONFIRMACIÓN (reset / clear) -->
+<div class="overlay" id="confirmOverlay" onclick="handleOverlayClick(event,'confirmOverlay')">
+  <div class="modal">
+    <div class="modal-drag"></div>
+    <div class="confirm-box">
+      <div class="ico" id="confirmIco">⚠️</div>
+      <h3 id="confirmTitle">¿Estás seguro?</h3>
+      <p id="confirmMsg">Esta acción no puede deshacerse.</p>
+      <div class="confirm-actions">
+        <button class="btn-no" onclick="closeOverlay('confirmOverlay')">Cancelar</button>
+        <button class="btn-yes" id="confirmYesBtn">Confirmar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════ SCRIPT ════════════ -->
+<script>
+/* ── STATE ── */
+const STATE_KEY = 'cartera_edu_v2';
+
+let state = {
+  balance: 0,
+  creditEnabled: false,
+  transactions: []
+};
+
+let currentMode = 'income'; // 'income' | 'expense'
+let adminUnlocked = false;
+
+/* ── PERSIST ── */
+function saveState() {
+  try { localStorage.setItem(STATE_KEY, JSON.stringify(state)); } catch(e) {}
+}
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STATE_KEY);
+    if (raw) { const parsed = JSON.parse(raw); state = { ...state, ...parsed }; }
+  } catch(e) {}
+}
+
+/* ── FORMAT ── */
+function fmt(n) {
+  const abs = Math.abs(n);
+  const str = abs.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  return (n < 0 ? '-' : '') + '$ ' + str;
+}
+
+function genFolio() {
+  return 'TXN-' + Date.now().toString(36).toUpperCase() +
+         '-' + Math.random().toString(36).slice(2,5).toUpperCase();
+}
+
+function timeLabel() {
+  const d = new Date();
+  return d.toLocaleDateString('es-MX', {day:'2-digit',month:'short'}) +
+         ' ' + d.toLocaleTimeString('es-MX', {hour:'2-digit',minute:'2-digit'});
+}
+
+/* ── RENDER ── */
+function render() {
+  const el = document.getElementById('balanceDisplay');
+  el.textContent = fmt(state.balance);
+  el.className = 'balance-amount' + (state.balance < 0 ? ' negative' : '');
+
+  const badge = document.getElementById('creditBadge');
+  badge.classList.toggle('hidden', !state.creditEnabled);
+
+  const creditToggle = document.getElementById('creditToggle');
+  if (creditToggle) creditToggle.checked = state.creditEnabled;
+
+  renderHistory();
+}
+
+function renderHistory() {
+  const list = document.getElementById('txList');
+  const clearBtn = document.getElementById('clearBtn');
+
+  if (state.transactions.length === 0) {
+    list.innerHTML = `<div class="empty-state"><div class="emo">💼</div><div>Sin transacciones aún.<br>¡Realiza tu primer movimiento!</div></div>`;
+    clearBtn.style.display = 'none';
+    return;
+  }
+
+  clearBtn.style.display = 'block';
+  const items = [...state.transactions].reverse().slice(0, 50);
+
+  list.innerHTML = items.map(tx => {
+    const isIn = tx.type === 'income';
+    const icon = isIn ? '📥' : '💸';
+    const detail = tx.detail ? `<span>· ${tx.detail}</span>` : '';
+    return `
+      <div class="tx-item">
+        <div class="tx-icon ${isIn ? 'in' : 'out'}">${icon}</div>
+        <div class="tx-body">
+          <div class="tx-concept">${tx.concept}</div>
+          <div class="tx-meta">
+            <span class="tx-folio">${tx.folio}</span>
+            <span>${tx.time}</span>
+            ${detail}
+          </div>
+        </div>
+        <div class="tx-amount ${isIn ? 'in' : 'out'}">${isIn ? '+' : '-'}${fmt(tx.amount)}</div>
+      </div>`;
+  }).join('');
+}
+
+/* ── BALANCE ANIMATION ── */
+function animateBalance(direction) {
+  const el = document.getElementById('balanceDisplay');
+  el.classList.remove('flash-up', 'flash-down');
+  void el.offsetWidth; // reflow
+  el.classList.add(direction === 'up' ? 'flash-up' : 'flash-down');
+  setTimeout(() => el.classList.remove('flash-up', 'flash-down'), 600);
+}
+
+/* ── MODAL ── */
+function openModal(mode) {
+  currentMode = mode;
+  const overlay = document.getElementById('txOverlay');
+  const title   = document.getElementById('modalTitle');
+  const btn     = document.getElementById('confirmBtn');
+
+  if (mode === 'income') {
+    title.innerHTML = '📥 Recibir Dinero <span class="badge badge-in">INGRESO</span>';
+    btn.className = 'btn-confirm income';
+    btn.textContent = '✅ Confirmar Ingreso';
+  } else {
+    title.innerHTML = '💸 Pagar / Retirar <span class="badge badge-out">EGRESO</span>';
+    btn.className = 'btn-confirm expense';
+    btn.textContent = '🔴 Confirmar Pago';
+  }
+
+  document.getElementById('amountInput').value = '';
+  document.getElementById('conceptSelect').value = '';
+  document.getElementById('detailInput').value = '';
+  document.getElementById('errorMsg').classList.remove('show');
+
+  overlay.classList.add('active');
+  setTimeout(() => document.getElementById('amountInput').focus(), 350);
+}
+
+function confirmTransaction() {
+  const raw     = document.getElementById('amountInput').value.trim();
+  const concept = document.getElementById('conceptSelect').value.trim();
+  const detail  = document.getElementById('detailInput').value.trim();
+  const errEl   = document.getElementById('errorMsg');
+  const errTxt  = document.getElementById('errorText');
+
+  errEl.classList.remove('show');
+
+  const amount = parseFloat(raw);
+  if (!raw || isNaN(amount) || amount <= 0) {
+    errTxt.textContent = 'Por favor ingresa un monto válido mayor a $0.';
+    errEl.classList.add('show');
+    return;
+  }
+  if (!concept) {
+    errTxt.textContent = 'Selecciona un concepto para registrar la transacción.';
+    errEl.classList.add('show');
+    return;
+  }
+
+  if (currentMode === 'expense') {
+    const newBal = state.balance - amount;
+    if (!state.creditEnabled && newBal < 0) {
+      errTxt.textContent = `⛔ Fondos insuficientes. Saldo actual: ${fmt(state.balance)}. No tienes crédito disponible.`;
+      errEl.classList.add('show');
+      return;
+    }
+    state.balance = Math.round(newBal * 100) / 100;
+    animateBalance('down');
+  } else {
+    state.balance = Math.round((state.balance + amount) * 100) / 100;
+    animateBalance('up');
+  }
+
+  state.transactions.push({
+    type: currentMode,
+    amount: Math.round(amount * 100) / 100,
+    concept,
+    detail,
+    folio: genFolio(),
+    time: timeLabel()
+  });
+
+  saveState();
+  render();
+  closeOverlay('txOverlay');
+  showToast(
+    currentMode === 'income'
+      ? `✅ +${fmt(amount)} registrado`
+      : `🔴 -${fmt(amount)} registrado`,
+    currentMode === 'income' ? 'success' : 'error'
+  );
+}
+
+/* ── ADMIN ── */
+function openAdmin() {
+  const overlay = document.getElementById('adminOverlay');
+  const pwScreen = document.getElementById('pwScreen');
+  const adminCtrl = document.getElementById('adminControls');
+
+  if (adminUnlocked) {
+    pwScreen.style.display = 'none';
+    adminCtrl.style.display = 'block';
+    document.getElementById('creditToggle').checked = state.creditEnabled;
+  } else {
+    pwScreen.style.display = 'block';
+    adminCtrl.style.display = 'none';
+    document.getElementById('pwInput').value = '';
+    document.getElementById('pwError').textContent = '';
+  }
+  overlay.classList.add('active');
+  if (!adminUnlocked) setTimeout(() => document.getElementById('pwInput').focus(), 350);
+}
+
+function checkPassword() {
+  const val = document.getElementById('pwInput').value;
+  if (val === 'profe2026') {
+    adminUnlocked = true;
+    document.getElementById('pwScreen').style.display = 'none';
+    document.getElementById('adminControls').style.display = 'block';
+    document.getElementById('creditToggle').checked = state.creditEnabled;
+    document.getElementById('adminBtn').classList.add('unlocked');
+    showToast('🔓 Panel desbloqueado', 'info');
+  } else {
+    document.getElementById('pwError').textContent = 'Contraseña incorrecta. Inténtalo de nuevo.';
+    document.getElementById('pwInput').value = '';
+    document.getElementById('pwInput').focus();
+  }
+}
+
+function adminSetBalance() {
+  const raw = document.getElementById('adminBalance').value.trim();
+  const val = parseFloat(raw);
+  if (isNaN(val)) { showToast('⚠ Ingresa un número válido', 'error'); return; }
+
+  const prev = state.balance;
+  state.balance = Math.round(val * 100) / 100;
+
+  state.transactions.push({
+    type: val >= prev ? 'income' : 'expense',
+    amount: Math.abs(Math.round((val - prev) * 100) / 100),
+    concept: 'Ajuste del Profesor',
+    detail: `Saldo ajustado de ${fmt(prev)} a ${fmt(state.balance)}`,
+    folio: genFolio(),
+    time: timeLabel()
+  });
+
+  animateBalance(val >= prev ? 'up' : 'down');
+  saveState();
+  render();
+  document.getElementById('adminBalance').value = '';
+  showToast(`💼 Saldo establecido en ${fmt(state.balance)}`, 'success');
+}
+
+function toggleCredit() {
+  state.creditEnabled = document.getElementById('creditToggle').checked;
+  saveState();
+  render();
+  showToast(state.creditEnabled ? '💳 Línea de crédito ACTIVADA' : '🔒 Línea de crédito desactivada', 'info');
+}
+
+/* ── RESET / CLEAR ── */
+function promptReset() {
+  showConfirm(
+    '🗑', 'Reiniciar Partida',
+    'Se borrará TODO el historial y el saldo volverá a $0.00 MXN. ¿Deseas continuar?',
+    () => {
+      state.balance = 0;
+      state.transactions = [];
+      saveState();
+      render();
+      closeOverlay('confirmOverlay');
+      closeOverlay('adminOverlay');
+      showToast('🔄 Partida reiniciada', 'info');
+    }
+  );
+}
+
+function promptClear() {
+  showConfirm(
+    '🗂', 'Limpiar Historial',
+    'Se borrará el historial de transacciones pero el saldo actual se conservará.',
+    () => {
+      state.transactions = [];
+      saveState();
+      render();
+      closeOverlay('confirmOverlay');
+      showToast('🗂 Historial limpiado', 'info');
+    }
+  );
+}
+
+/* ── CONFIRM DIALOG ── */
+let pendingConfirmAction = null;
+function showConfirm(ico, title, msg, action) {
+  document.getElementById('confirmIco').textContent = ico;
+  document.getElementById('confirmTitle').textContent = title;
+  document.getElementById('confirmMsg').textContent = msg;
+  pendingConfirmAction = action;
+  document.getElementById('confirmYesBtn').onclick = () => { if(pendingConfirmAction) pendingConfirmAction(); };
+  document.getElementById('confirmOverlay').classList.add('active');
+}
+
+/* ── OVERLAY UTILS ── */
+function closeOverlay(id) {
+  document.getElementById(id).classList.remove('active');
+}
+function handleOverlayClick(e, id) {
+  if (e.target.id === id) closeOverlay(id);
+}
+
+/* ── TOAST ── */
+let toastTimer;
+function showToast(msg, type='success') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = `toast ${type} show`;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 3000);
+}
+
+/* ── KEYBOARD ── */
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    ['txOverlay','adminOverlay','confirmOverlay'].forEach(closeOverlay);
+  }
+  if (e.key === 'Enter' && document.getElementById('txOverlay').classList.contains('active')) {
+    confirmTransaction();
+  }
+});
+
+/* ── INIT ── */
+loadState();
+render();
+</script>
+</body>
+</html>
